@@ -128,8 +128,25 @@ def add_product():
         else:
             pic_filename =secure_filename(p_pic.filename)
             p_pic.save(os.path.join(app.config['uploadPic'],pic_filename)) #save imaged into local server
+            with connectDB() as conn:
+                try:
+                    cursor = conn.cursor()
+                    cursor.execute("insert into product (name,price,category,filepath) values (?,?,?,?) ",(pname,price,category,pic_filename))
+                    flash("product inserted","info")
+                    return redirect(url_for("showProducts"))
 
-            return "something"
+                except Exception as err:
+                    print(f' error is {err}')
+            return "error "
+
+@app.route("/products")
+def showProducts():
+    with connectDB() as conn:
+        cursor = conn.cursor()
+        rows = cursor.execute("select * from product").fetchall()
+        return render_template("products.html",records = rows, title="product list")
+
+            
 
 
 
